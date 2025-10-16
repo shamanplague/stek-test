@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Справочник организаций</title>
+  </head>
+  <body>
+    <div id="app">
+      <div class="container">
+        <div class="search-input-wrapper">
+          <input id="search-input" class="search-input" type="text" placeholder="Найти по ФИО..."></div>
+        </div>
+        <div class="organization-table">
+          <div class="organization-table__header">
+            <div class="organization-table__cell">Название</div>
+            <div class="organization-table__cell">ФИО директора</div>
+            <div class="organization-table__cell">Номер телефона</div>
+            <div class="organization-table__cell">Адрес</div>
+            <div class="organization-table__cell organization-table__cell--action">&nbsp;</div>
+          </div>
+          <div class="organization-table__content" id="organization-table-content"></div>
+        </div>
+
+        <div class="paginator-wrapper">
+          <div class="paginator" id="paginator">
+            <button class="paginator__button paginator__button--prev" id="paginator-button-prev">Назад</button>
+            <div class="paginator__number-container" id="paginator-numbers"></div>
+            <button class="paginator__button paginator__button--next" id="paginator-button-next">Вперёд</button>
+          </div>
+        </div>
+      </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
