@@ -80,3 +80,21 @@ body {
 .paginator__button {
     cursor: pointer;
 }
+
+.sort-arrow-up {
+    display: inline-block;
+    margin-left: 5px;
+}
+
+.sort-arrow-up::after {
+    content: '\2191';
+}
+
+.sort-arrow-down {
+    display: inline-block;
+    margin-left: 5px;
+}
+
+.sort-arrow-down::after {
+    content: '\2193';
+}

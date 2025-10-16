@@ -1,4 +1,9 @@
 export type PaginatorData = {
     pageNumber: number
-    callback: (event: Event) => void
-} 
+}
+
+export type OrganizationHeader = {
+    title: string
+    label?: string
+    classList?: string
+}
