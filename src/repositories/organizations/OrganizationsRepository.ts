@@ -1,16 +1,20 @@
 import type { Organization } from "../../types/Organization"
-import type { WithoutId, OnlyIdRequired, Repository, RepositoryResponseWithPagination, PaginationFilter, EntityRepositoryGetFilters } from "../../types/Repository"
+import type { WithoutId, OnlyIdRequired, Repository, RepositoryResponseWithPagination, PaginationFilter, EntityRepositoryFilters, EntityRepositorySorts } from "../../types/Repository"
 import type { FilterStrategy } from "../../strategies/organizations/filters/FilterStrategy"
-import type { LocalStorageRepositoryGetFilters } from "../../strategies/organizations/filters/types"
+import type { LocalStorageRepositoryFilters } from "../../strategies/organizations/filters/types"
 import { LocalStorageFilterStrategy } from "../../strategies/organizations/filters/LocalStorageFilterStrategy"
 import { LocalStorageStore } from "../common/LocalStorageStore"
 import { deepMerge } from "../../helpers/helpers"
+import { LocalStorageSortStrategy } from "../../strategies/organizations/sorts/LocalStorageSortStrategy"
+import type { SortStrategy } from "../../strategies/organizations/sorts/SortStrategy"
+import type { LocalStorageRepositorySorts } from "../../strategies/organizations/sorts/types"
 
 export class OrganizationsRepositoryFactory {
   static createLocal(options?: | { perPage?: number } | undefined): OrganizationsRepository {
     return new OrganizationsRepository(
       new LocalStorageStore<Organization>(),
       new LocalStorageFilterStrategy(),
+      new LocalStorageSortStrategy(),
       { page: 1, perPage: options?.perPage || 10}
     )
   }
@@ -18,21 +22,24 @@ export class OrganizationsRepositoryFactory {
 
 class OrganizationsRepository {
 
-  private repository: Repository<Organization, LocalStorageRepositoryGetFilters<Organization>>
-  private filterStrategy: FilterStrategy<LocalStorageRepositoryGetFilters<Organization>>
+  private repository: Repository<Organization, LocalStorageRepositoryFilters<Organization>, LocalStorageRepositorySorts<Organization>>
+  private filterStrategy: FilterStrategy<LocalStorageRepositoryFilters<Organization>>
+  private sortStrategy: SortStrategy<Organization, LocalStorageRepositorySorts<Organization>>
   private defaultPagination: PaginationFilter
 
   constructor (
-    repository: Repository<Organization, LocalStorageRepositoryGetFilters<Organization>>, 
-    filterStrategy: FilterStrategy<LocalStorageRepositoryGetFilters<Organization>>,
+    repository: Repository<Organization, LocalStorageRepositoryFilters<Organization>, LocalStorageRepositorySorts<Organization>>, 
+    filterStrategy: FilterStrategy<LocalStorageRepositoryFilters<Organization>>,
+    sortStrategy: SortStrategy<Organization, LocalStorageRepositorySorts<Organization>>,
     defaultPagination: PaginationFilter
   ) {
     this.repository = repository
     this.filterStrategy = filterStrategy
+    this.sortStrategy = sortStrategy
     this.defaultPagination = defaultPagination
   }
 
-  getOrganizations (filters: EntityRepositoryGetFilters = {}): RepositoryResponseWithPagination<Organization> {
+  getOrganizations (filters: EntityRepositoryFilters = {}, sorts: EntityRepositorySorts<Organization> = {}): RepositoryResponseWithPagination<Organization> {
 
     let pagination = this.defaultPagination
 
@@ -49,8 +56,9 @@ class OrganizationsRepository {
     }
 
     const adaptedFilters = this.filterStrategy.applyFilters(mergedFilters)
+    const adaptedSorts = this.sortStrategy.applySorts(sorts)
 
-    return this.repository.getItems(adaptedFilters)
+    return this.repository.getItems(adaptedFilters, adaptedSorts)
   }
 
   getOrganizationById (id: number): Organization | undefined {

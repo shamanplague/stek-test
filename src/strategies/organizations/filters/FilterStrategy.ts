@@ -1,5 +1,5 @@
-import type { RepositoryGetFilters } from "../../../types/Repository"
+import type { EntityRepositoryFilters } from "../../../types/Repository"
 
 export interface FilterStrategy<T> {
-  applyFilters(filters: RepositoryGetFilters): T
+  applyFilters(filters: EntityRepositoryFilters): T
 }

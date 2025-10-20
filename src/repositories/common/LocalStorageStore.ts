@@ -1,8 +1,9 @@
 import type { DefaultEntity, Repository, OnlyIdRequired, WithoutId, RepositoryResponseWithPagination } from "../../types/Repository"
 import { deepMerge } from "../../helpers/helpers"
-import type { LocalStorageRepositoryGetFilters } from "../../strategies/organizations/filters/types"
+import type { LocalStorageRepositoryFilters } from "../../strategies/organizations/filters/types"
+import type { LocalStorageRepositorySorts } from "../../strategies/organizations/sorts/types"
 
-export class LocalStorageStore<Entity extends DefaultEntity> implements Repository<Entity, LocalStorageRepositoryGetFilters<Entity>> {
+export class LocalStorageStore<Entity extends DefaultEntity> implements Repository<Entity, LocalStorageRepositoryFilters<Entity>, LocalStorageRepositorySorts<Entity>> {
 
     private state: Entity[] = []
 
@@ -10,13 +11,17 @@ export class LocalStorageStore<Entity extends DefaultEntity> implements Reposito
         return this.state.length
     }
 
-    getItems (filters: LocalStorageRepositoryGetFilters<Entity>): RepositoryResponseWithPagination<Entity> {
+    getItems (filters: LocalStorageRepositoryFilters<Entity>, sorts: LocalStorageRepositorySorts<Entity>): RepositoryResponseWithPagination<Entity> {
         let rawItems = this.state
         let items = this.state
 
         if (filters.predicate) {
             rawItems = rawItems.filter(filters.predicate)
             items = items.filter(filters.predicate)
+        }
+
+        if (sorts) {
+            items = sorts.sortFn(items)
         }
 
         const { page, perPage } = filters.pagination
