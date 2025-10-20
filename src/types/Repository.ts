@@ -10,15 +10,12 @@ export type OnlyIdRequired<T extends DefaultEntity> = { id: T['id'] } & DeepPart
 
 export type PaginationFilter = { page: number; perPage: number }
 
-export type EntitySort = { [key: string]: 'ASC' | 'DESC' }
-
-export type EntityRepositoryGetFilters = {
+export type EntityRepositoryFilters = {
     pagination?: Pick<PaginationFilter, 'page'>
     searchString?: string
-    currentSortings?: EntitySort[]
 }
 
-export type RepositoryGetFilters = {
+export type RepositoryFilters = {
     pagination: PaginationFilter
     searchString?: string
 }
@@ -30,8 +27,12 @@ export type RepositoryResponseWithPagination<Entity> = {
     pagination: Pagination
 }
 
-export interface Repository<RepositoryEntity extends DefaultEntity, FiltersFormat> {
-    getItems(filters? : FiltersFormat): RepositoryResponseWithPagination<RepositoryEntity>
+export type SortDirections = 'ASC' | 'DESC' | undefined
+
+export type EntityRepositorySorts<T> = { [key in keyof T]?: SortDirections }
+
+export interface Repository<RepositoryEntity extends DefaultEntity, FiltersFormat, SortsFormat> {
+    getItems(filters? : FiltersFormat, sorts?: SortsFormat): RepositoryResponseWithPagination<RepositoryEntity>
     getItemById(id: number): RepositoryEntity
     addItem(data: WithoutId<RepositoryEntity>): void
     updateItem(data: OnlyIdRequired<RepositoryEntity>): void

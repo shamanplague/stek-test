@@ -26,7 +26,9 @@ body {
 }
 
 .organization-table__header .organization-table__cell {
-        background-color: #ffffff47;
+    background-color: #ffffff47;
+    cursor: pointer;
+    user-select: none;
 }
 
 .organization-table__row {
@@ -77,24 +79,22 @@ body {
     cursor: pointer;
 }
 
+.paginator__number--current {
+    color: red
+}
+
 .paginator__button {
     cursor: pointer;
 }
 
-.sort-arrow-up {
-    display: inline-block;
-    margin-left: 5px;
-}
-
 .sort-arrow-up::after {
-    content: '\2191';
-}
-
-.sort-arrow-down {
     display: inline-block;
     margin-left: 5px;
+    content: '\2191';
 }
 
 .sort-arrow-down::after {
     content: '\2193';
+    display: inline-block;
+    margin-left: 5px;
 }

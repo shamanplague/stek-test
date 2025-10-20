@@ -33,6 +33,10 @@ export class PaginatorRenderer {
             page.className = 'paginator__number'
             page.innerText = `${i}`
 
+            if (data.page === i) {
+                page.className += ' paginator__number--current'
+            }
+
             numbers.appendChild(page)
         }
 

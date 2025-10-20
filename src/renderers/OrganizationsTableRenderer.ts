@@ -1,15 +1,33 @@
+import { typedEntries } from "../helpers/helpers";
 import type { Organization } from "../types/Organization";
+import type { EntityRepositorySorts, SortDirections } from "../types/Repository";
 import type { OrganizationHeader } from "./types";
 
 export class OrganizationsTableRenderer {
 
-  static getRenderFunction = (rootElement: HTMLDivElement): (headers: OrganizationHeader[], items: Organization[]) => void => {
-    return (headers: OrganizationHeader[], items: Organization[]) => {
-      OrganizationsTableRenderer.renderTable(rootElement, headers, items)
+  static getRenderFunction = (
+    rootElement: HTMLDivElement
+  ): (
+    headers: OrganizationHeader[],
+    items: Organization[],
+    sorts?: EntityRepositorySorts<Organization>
+  ) => void => {
+    return (
+      headers: OrganizationHeader[],
+      items: Organization[],
+      sorts?: EntityRepositorySorts<Organization>
+    ) => 
+    {
+      OrganizationsTableRenderer.renderTable(rootElement, headers, items, sorts)
     }
   }
 
-  private static renderTable = (rootElement: HTMLDivElement, headers: OrganizationHeader[], items: Organization[]) => {
+  private static renderTable = (
+    rootElement: HTMLDivElement,
+    headers: OrganizationHeader[],
+    items: Organization[],
+    sorts?: EntityRepositorySorts<Organization>
+  ) => {
 
     rootElement.innerHTML = ''
 
@@ -19,8 +37,22 @@ export class OrganizationsTableRenderer {
 
     const tableHeaderContainer = document.createElement('div')
     tableHeaderContainer.className = 'organization-table__header'
+    tableHeaderContainer.id = 'organization-table-header'
 
     const header = OrganizationsTableRenderer.buildHeader(headers)
+
+    if (sorts) {
+
+      typedEntries(sorts).forEach(sort => {
+        const [ field, direction ] = sort
+
+        const elementForSort = header.querySelector(`[data-sort-label="${field}"]`)
+
+        if (elementForSort instanceof HTMLElement) {
+          this.setSortIconOnMarkdown(elementForSort, direction)
+        }
+      })
+    }
 
     tableHeaderContainer.appendChild(header)
     
@@ -35,6 +67,16 @@ export class OrganizationsTableRenderer {
     fragment.appendChild(tableContentContainer)
 
     rootElement.appendChild(fragment)
+  }
+
+  private static setSortIconOnMarkdown = (target: HTMLElement, sort: SortDirections) => {
+    if (sort === 'ASC') {
+      target.className += ' sort-arrow-down'
+    } else if (sort === 'DESC') {
+      target.className += ' sort-arrow-up'
+    }
+
+    target.className = target.className.trim()
   }
 
   private static buildHeader(data: OrganizationHeader[]): DocumentFragment {

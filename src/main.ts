@@ -1,10 +1,12 @@
 import './style.css'
 import { defaultOrganizationsState } from './mockData/defaultOrganizationsState'
 import { OrganizationsRepositoryFactory } from './repositories/organizations/OrganizationsRepository'
-import type { EntityRepositoryGetFilters } from './types/Repository'
+import type { EntityRepositoryFilters, EntityRepositorySorts, SortDirections } from './types/Repository'
 import type { OrganizationHeader } from './renderers/types'
 import { OrganizationsTableRenderer } from './renderers/OrganizationsTableRenderer'
 import { PaginatorRenderer } from './renderers/PaginatorRenderer'
+import type { Organization } from './types/Organization'
+import { isKeyOf } from './helpers/helpers'
 
 const tableHeaders: OrganizationHeader[] = [
   {
@@ -29,12 +31,11 @@ const tableHeaders: OrganizationHeader[] = [
   }
 ]
 
-const currentFilters: EntityRepositoryGetFilters = {
+const currentFilters: EntityRepositoryFilters = {
   searchString: '',
-  currentSortings: [
-    { name: 'ASC' }
-  ]
 }
+
+const currentSorts: EntityRepositorySorts<Organization> = {}
 
 const orgRepository = OrganizationsRepositoryFactory.createLocal({ perPage: 15})
 
@@ -48,7 +49,11 @@ const renderTable = OrganizationsTableRenderer.getRenderFunction(
   document.getElementById('organization-table') as HTMLDivElement
 )
 
-renderTable(tableHeaders, items)
+renderTable(tableHeaders, items, currentSorts)
+
+const tableHeader = document.getElementById('organization-table')
+
+tableHeader!.addEventListener('click', headerCallback)
 
 // paginator init
 
@@ -68,6 +73,40 @@ searchInput?.addEventListener('input', searchCallback)
 
 // handlers
 
+function headerCallback (event: PointerEvent) {
+  const { target } = event
+
+  const getNextSort = (currentSort: SortDirections): SortDirections => {
+    if (!currentSort) return 'ASC'
+    if (currentSort === 'ASC') return 'DESC'
+    if (currentSort === 'DESC') return
+  }
+
+  if (target instanceof HTMLElement) {
+    const label = target.getAttribute('data-sort-label')
+
+    const fieldsForSort = [ 'name', 'headManagerName' ]
+
+    if (!label || !fieldsForSort.includes(label)) return
+
+    if (isKeyOf(currentSorts, label)) {
+      const nextSort = getNextSort(currentSorts[label])
+      if (nextSort) {
+        currentSorts[label] = nextSort
+      } else {
+        delete currentSorts[label]
+      }
+      
+    } else {
+      currentSorts[label as keyof Organization] = 'ASC'
+    }
+
+    refreshData(1)
+    renderTable(tableHeaders, items, currentSorts)
+    renderPaginator(pagination)
+  }
+}
+
 function paginatorCallback (event: Event) {
 
   const { target } = event
@@ -77,6 +116,8 @@ function paginatorCallback (event: Event) {
     if (target.id === 'paginator-button-next') { goForward() }
     if (/paginator__number/.test(target.className)) { goToPage(+target.innerText) }
   }
+
+  renderPaginator(pagination)
 }
 
 function searchCallback (event: Event) {
@@ -84,7 +125,7 @@ function searchCallback (event: Event) {
     currentFilters.searchString = event.target.value
     
     refreshData(1)
-    renderTable(tableHeaders, items)
+    renderTable(tableHeaders, items, currentSorts)
     renderPaginator(pagination)
   }
 }
@@ -94,7 +135,7 @@ const goBack = () => {
 
   if(newPage > 0) {
     refreshData(newPage)
-    renderTable(tableHeaders, items)
+    renderTable(tableHeaders, items, currentSorts)
   }
 }
 
@@ -103,13 +144,13 @@ const goForward = () => {
 
   if (newPage <= pagination.totalPages) {
     refreshData(newPage)
-    renderTable(tableHeaders, items)
+    renderTable(tableHeaders, items, currentSorts)
   } 
 }
 
 const goToPage = (page: number) => {
   refreshData(page)
-  renderTable(tableHeaders, items)
+  renderTable(tableHeaders, items, currentSorts)
 }
 
 const refreshData = (page: number) => {
@@ -118,7 +159,8 @@ const refreshData = (page: number) => {
     pagination: {
       page
     }
-  })
+  },
+  currentSorts)
 
   items = orgs.items
   pagination = orgs.pagination

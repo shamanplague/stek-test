@@ -1,6 +1,6 @@
 const isPlainObject = (value: any) => typeof value === 'object' && !Array.isArray(value)
 
-function isKeyOf<T extends object>(obj: T, key: PropertyKey): key is keyof T {
+export const isKeyOf = <T extends object>(obj: T, key: PropertyKey): key is keyof T => {
   return typeof key === 'string' && key in obj
 }
 
@@ -22,4 +22,10 @@ export const deepMerge = <T>(target: T, source: Partial<T>): T  => {
   })
 
   return result
+}
+
+export function typedEntries<T extends Record<string, any>>(
+  obj: T
+): [keyof T, T[keyof T]][] {
+  return Object.entries(obj) as [keyof T, T[keyof T]][];
 }
