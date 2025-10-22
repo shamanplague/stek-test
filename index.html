@@ -9,8 +9,13 @@
   <body>
     <div id="app">
       <div class="container">
-        <div class="search-input-wrapper">
-          <input id="search-input" class="search-input" type="text" placeholder="Найти по ФИО..."></div>
+        <div class="top-panel">
+          <div class="search-input-wrapper">
+            <input id="search-input" class="search-input" type="text" placeholder="Найти по ФИО...">
+          </div>
+          <div class="add-button-wrapper" id="organizations-add-button">
+            <button>Добавить</button>
+          </div>
         </div>
         <div class="organization-table" id="organization-table">
         </div>
@@ -18,6 +23,53 @@
           <div class="paginator" id="paginator">
           </div>
         </div>
+      </div>
+
+      <div class="form-modal" id="organizations-form-modal">
+        <div class="form-modal__close-button close-button" id="organizations-form-modal-close-button">
+          <div class="close-button__icon"></div>
+        </div>
+
+        <div class="form-modal__title" id="organizations-form-modal-title">Создание организации</div>
+
+        <form class="form-modal__content form-content" id="organizations-form">
+
+          <div class="form-content__fields-section fields-section">
+
+            <input type="hidden" name="id">
+
+            <div class="fields-section__field">
+              <div class="fields-section__label">Название</div>
+              <input type="text" class="fields-section__input" name="name">
+            </div>
+            <div class="fields-section__field">
+              <div class="fields-section__label">ФИО директора</div>
+              <input type="text" class="fields-section__input" name="headManagerName">
+            </div>
+            <div class="fields-section__field">
+              <div class="fields-section__label">Телефон</div>
+              <input type="number" class="fields-section__input" name="phone">
+            </div>
+            <div class="fields-section__field">
+              <div class="fields-section__label">Город</div>
+              <input type="text" class="fields-section__input" name="city">
+            </div>
+            <div class="fields-section__field">
+              <div class="fields-section__label">Улица</div>
+              <input type="text" class="fields-section__input" name="street">
+            </div>
+            <div class="fields-section__field">
+              <div class="fields-section__label">Дом</div>
+              <input type="text" class="fields-section__input" name="house">
+            </div>
+          </div>
+
+          <div class="form-content__buttons-section buttons-section">
+            <button class="buttons-section__button" id="button-cancel" type="button">Отмена</button>
+            <button class="buttons-section__button" id="button-submit" type="submit" disabled>Подтвердить</button>
+          </div>
+        </form>
+
       </div>
     <script type="module" src="/src/main.ts"></script>
   </body>

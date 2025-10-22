@@ -51,7 +51,7 @@ export class LocalStorageStore<Entity extends DefaultEntity> implements Reposito
     }
 
     addItem(data: WithoutId<Entity>): void {
-        this.state.push({
+        this.state.unshift({
             ...data,
             id: this.getNewId()
         } as Entity)

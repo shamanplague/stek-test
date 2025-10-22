@@ -96,7 +96,7 @@ export class OrganizationsTableRenderer {
       headerCell.innerText = title
 
       if (label) {
-        headerCell.setAttribute('data-sort-label', label) 
+        headerCell.setAttribute('data-sort-label', label)
       }
 
       fragment.appendChild(headerCell)
@@ -132,7 +132,7 @@ export class OrganizationsTableRenderer {
         org.name,
         org.headManagerName,
         org.phone,
-        `${org.address.city}, ${org.address.street}, д. ${org.address.house}`,
+        `г. ${org.address.city}, ул. ${org.address.street}, д. ${org.address.house}`,
         'X'
       ]
 
@@ -141,9 +141,17 @@ export class OrganizationsTableRenderer {
         col.className = 'organization-table__cell'
         if (index === cols.length-1) {
             col.className += ' organization-table__cell--action'
+            const actionElement = document.createElement('div')
+            actionElement.id = 'delete-action-button'
+            actionElement.className += 'delete-action-button'
+            actionElement.textContent = text
+            col.appendChild(actionElement)
+        } else {
+          col.textContent = text
         }
-        col.textContent = text
+        
         row.appendChild(col)
+        row.setAttribute('data-entity-id', `${org.id}`)
       })
 
       fragment.appendChild(row)
