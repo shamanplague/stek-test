@@ -7,7 +7,9 @@ import { OrganizationsTableRenderer } from './renderers/OrganizationsTableRender
 import { PaginatorRenderer } from './renderers/PaginatorRenderer'
 import type { Organization } from './types/Organization'
 import { isKeyOf, typedEntries } from './helpers/helpers'
-import { resetForm, setDisableValueButtonOnForm, toggleFormModal } from './helpers/domHelpers'
+import { isFormFull, resetForm, setDisableValueButtonOnForm, toggleFormModal } from './helpers/domHelpers'
+import { getNextPage } from './callbacks/paginator'
+import { addButtonCallback } from './callbacks/add-button'
 
 const tableHeaders: OrganizationHeader[] = [
   {
@@ -64,13 +66,22 @@ const renderPaginator = PaginatorRenderer.getRenderFunction(paginatorContainer a
 
 renderPaginator(pagination)
 
-paginatorContainer?.addEventListener('click', paginatorCallback)
+paginatorContainer?.addEventListener('click', event => {
+  const page = getNextPage(event, pagination)
+
+  rerenderPage(page)
+})
 
 // search init
 
 const searchInput = document.getElementById('search-input')
 
-searchInput?.addEventListener('input', searchCallback)
+searchInput?.addEventListener('input', event => {
+  if (event.target instanceof HTMLInputElement) {
+    currentFilters.searchString = event.target.value
+    rerenderPage(1)
+  }
+})
 
 // form
 
@@ -78,8 +89,12 @@ const form = document.getElementById('organizations-form')
 
 if (form instanceof HTMLFormElement) {
   form.addEventListener('submit', organizationFormCallback)
+
   // live validation
-  form.addEventListener('input', () => liveValidationCallback(form))
+  form.addEventListener('input', () => {
+    const isFullForm = isFormFull(form)
+    setDisableValueButtonOnForm('organizations-form', !isFullForm)
+  })
 }
 
 // buttons
@@ -96,33 +111,7 @@ const cancelButton = document.getElementById('button-cancel')
 
 cancelButton?.addEventListener('click', () => toggleFormModal(false))
 
-// handlers
-
-function addButtonCallback () {
-  const title = document.querySelector('#organizations-form-modal-title')
-
-  if (title instanceof HTMLElement) {
-    title.innerText = 'Создание организации'
-  }
-
-  toggleFormModal(true)
-}
-
-function liveValidationCallback (form: HTMLFormElement) {
-
-  if (form instanceof HTMLFormElement) {
-
-    const inputs = form.querySelectorAll("input:not(input[type='hidden'])")
-
-    const allInputs = Array.from(inputs) as HTMLInputElement[]
-
-    const allInputsValues = allInputs.map(item => item.value)
-
-    const isFullForm = allInputsValues.every(item => item)
-
-    setDisableValueButtonOnForm('organizations-form', !isFullForm)
-  }
-}
+//callbacks
 
 function organizationFormCallback (event: Event) {
   event.preventDefault()
@@ -161,9 +150,7 @@ function organizationFormCallback (event: Event) {
 
     resetForm('organizations-form')
     toggleFormModal(false)
-    refreshData(1)
-    renderTable(tableHeaders, items, currentSorts)
-    renderPaginator(pagination)
+    rerenderPage(1)
   }
 }
 
@@ -190,9 +177,7 @@ const defineSorts = (label: string) => {
     currentSorts[label as keyof Organization] = 'ASC'
   }
 
-  refreshData(1)
-  renderTable(tableHeaders, items, currentSorts)
-  renderPaginator(pagination)
+  rerenderPage(1)
 
 }
 
@@ -201,15 +186,13 @@ const deleteOrg = (orgId: string) => {
   if (!Number.isNaN(numOrgId)) {
     orgRepository.removeOrganization(numOrgId)
 
-    refreshData(pagination.page)
-    renderTable(tableHeaders, items, currentSorts)
-    renderPaginator(pagination)
+    rerenderPage(pagination.page)
   } else {
     throw 'Передан некорректный id'
   }
 }
 
-const updateOrg = (orgId: string) => {
+const openUpdateForm = (orgId: string) => {
   const numOrgId = +orgId
   if (!Number.isNaN(numOrgId)) {
     const orgForUpdate = orgRepository.getOrganizationById(numOrgId)
@@ -261,48 +244,12 @@ function tableCallback (event: PointerEvent) {
       const entityId = row.dataset.entityId
 
       if (isCell) {
-        entityId && updateOrg(entityId)
+        entityId && openUpdateForm(entityId)
       } else {
         entityId && deleteOrg(entityId)
       }
     }
   }
-}
-
-function paginatorCallback (event: Event) {
-
-  const { target } = event
-
-  if (target instanceof HTMLElement) {
-    if (target.id === 'paginator-button-prev') { goBack() }
-    if (target.id === 'paginator-button-next') { goForward() }
-    if (/paginator__number/.test(target.className)) { goToPage(+target.innerText) }
-  }
-
-  renderPaginator(pagination)
-}
-
-const goBack = () => {
-  const newPage = pagination.page - 1
-
-  if(newPage > 0) {
-    refreshData(newPage)
-    renderTable(tableHeaders, items, currentSorts)
-  }
-}
-
-const goForward = () => {
-  const newPage = pagination.page + 1
-
-  if (newPage <= pagination.totalPages) {
-    refreshData(newPage)
-    renderTable(tableHeaders, items, currentSorts)
-  } 
-}
-
-const goToPage = (page: number) => {
-  refreshData(page)
-  renderTable(tableHeaders, items, currentSorts)
 }
 
 const refreshData = (page: number) => {
@@ -318,12 +265,8 @@ const refreshData = (page: number) => {
   pagination = orgs.pagination
 }
 
-function searchCallback (event: Event) {
-  if (event.target instanceof HTMLInputElement) {
-    currentFilters.searchString = event.target.value
-    
-    refreshData(1)
-    renderTable(tableHeaders, items, currentSorts)
-    renderPaginator(pagination)
-  }
+const rerenderPage = (page: number) => {
+  refreshData(page)
+  renderTable(tableHeaders, items, currentSorts)
+  renderPaginator(pagination)
 }
