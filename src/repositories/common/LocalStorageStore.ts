@@ -2,13 +2,44 @@ import type { DefaultEntity, Repository, OnlyIdRequired, WithoutId, RepositoryRe
 import { deepMerge } from "../../helpers/helpers"
 import type { LocalStorageRepositoryFilters } from "../../strategies/organizations/filters/types"
 import type { LocalStorageRepositorySorts } from "../../strategies/organizations/sorts/types"
+import { defaultOrganizationsState } from "../../mockData/defaultOrganizationsState"
 
 export class LocalStorageStore<Entity extends DefaultEntity> implements Repository<Entity, LocalStorageRepositoryFilters<Entity>, LocalStorageRepositorySorts<Entity>> {
+
+    private LSLabel = 'org-directory-state'
 
     private state: Entity[] = []
 
     private getNewId (): Entity['id'] {
         return this.state.length
+    }
+
+    constructor () {
+        this.loadState()
+    }
+
+    private saveState = () => {
+        let serializedState = ''
+
+        try {
+            serializedState = JSON.stringify(this.state)
+        } catch {
+            throw 'Не удалось сериализовать состояние'
+        }
+
+        localStorage.setItem(this.LSLabel, serializedState)
+    }
+
+    private loadState = () => {
+        let unserializedState = {}
+
+        try {
+            unserializedState = JSON.parse(localStorage.getItem(this.LSLabel)!) as object
+        } catch {
+            throw 'Не удалось сериализовать состояние'
+        }
+
+        this.state = unserializedState as Entity[] || defaultOrganizationsState
     }
 
     getItems (filters: LocalStorageRepositoryFilters<Entity>, sorts: LocalStorageRepositorySorts<Entity>): RepositoryResponseWithPagination<Entity> {
@@ -55,6 +86,8 @@ export class LocalStorageStore<Entity extends DefaultEntity> implements Reposito
             ...data,
             id: this.getNewId()
         } as Entity)
+
+        this.saveState()
     }
 
     updateItem(data: OnlyIdRequired<Entity>): void {
@@ -67,9 +100,13 @@ export class LocalStorageStore<Entity extends DefaultEntity> implements Reposito
         const existingItem = this.state[index]
 
         this.state[index] = deepMerge(existingItem, data as Partial<Entity>)
+
+        this.saveState()
     }
 
     removeItem (id: Entity['id']) {
         this.state = this.state.filter(item => item.id !== id)
+
+        this.saveState()
     }
 }

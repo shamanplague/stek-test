@@ -1,5 +1,4 @@
 import './style.css'
-import { defaultOrganizationsState } from './mockData/defaultOrganizationsState'
 import { OrganizationsRepositoryFactory } from './repositories/organizations/OrganizationsRepository'
 import type { EntityRepositoryFilters, EntityRepositorySorts, SortDirections } from './types/Repository'
 import type { OrganizationHeader } from './renderers/types'
@@ -41,8 +40,6 @@ const currentFilters: EntityRepositoryFilters = {
 const currentSorts: EntityRepositorySorts<Organization> = {}
 
 const orgRepository = OrganizationsRepositoryFactory.createLocal({ perPage: 15})
-
-defaultOrganizationsState.forEach(item => orgRepository.addOrganization(item))
 
 let { items, pagination } = orgRepository.getOrganizations()
 
