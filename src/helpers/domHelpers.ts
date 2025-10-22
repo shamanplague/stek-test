@@ -41,3 +41,17 @@ export const toggleFormModal = (isOpen: boolean) => {
   resetForm('organizations-form')
   setDisableValueButtonOnForm('organizations-form', true)
 }
+
+export const isFormFull = (form: HTMLFormElement) => {
+
+  if (form instanceof HTMLFormElement) {
+
+    const inputs = form.querySelectorAll("input:not(input[type='hidden'])")
+
+    const allInputs = Array.from(inputs) as HTMLInputElement[]
+
+    const allInputsValues = allInputs.map(item => item.value)
+
+    return allInputsValues.every(item => item)
+  }
+}
