@@ -50,7 +50,8 @@ body {
 .organization-table__cell {
     background-color: white;
     width: 24%;
-    padding: 10px
+    padding: 10px;
+    word-break: break-word;
 }
 
 .organization-table__cell--action {
@@ -180,4 +181,6 @@ body {
 
 .delete-action-button {
     cursor: pointer;
+    cursor: pointer;
+    z-index: 10;
 }
